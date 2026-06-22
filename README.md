@@ -93,5 +93,3 @@ The configuration utilizes a strict separation of concerns to ensure stability a
 Detailed technical references and guides for customizing CedarVim are maintained in the `doc/` directory:
 
 - **[Keybindings Guide](doc/keybinds.md)**: Comprehensive mapping and shortcut reference.
-- **[Technical Audit](doc/AUDIT-Rigorous.md)**: Deep-dive analysis of the system architecture.
-- **[Implementation Walkthrough](doc/walkthrough.md)**: History of optimizations, migrations, and bug fixes.
