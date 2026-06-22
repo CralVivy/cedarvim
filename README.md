@@ -23,7 +23,7 @@
 
 ## What is CedarVim?
 
-CedarVim is a Neovim configuration that builds upon the educational foundation of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) and brings it to the level of a full-featured daily driver. Where Kickstart teaches you what every line does, CedarVim has already done the heavy lifting — consolidating plugins, tuning performance, and configuring a complete IDE experience out of the box.
+CedarVim is a Neovim configuration that builds upon the educational foundation of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) and brings it to the level of a full-featured daily driver. Where Kickstart teaches you what every line does, CedarVim has already done the heavy lifting consolidating plugins, tuning performance, and configuring a complete IDE experience out of the box.
 
 It follows a **Unification Strategy**: instead of installing a plugin for every problem, it consolidates related functionality into single, high-performance engines. Less to maintain. Less memory. More speed.
 
