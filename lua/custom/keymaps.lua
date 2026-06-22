@@ -61,5 +61,8 @@ end, { desc = 'Pick Theme', silent = true })
 
 vim.keymap.set('n', '<leader>aa', '<Cmd>CodeCompanionChat<CR>', { desc = 'Toggle CodeCompanion Chat' })
 vim.keymap.set('n', '<leader>ao', '<Cmd>CodeCompanionActions<CR>', { desc = 'Open CodeCompanion Actions' })
--- -- vim.keymap.set('n', '<leader>ar', '<Cmd>CodeCompanionReview<CR>', {desc = 'Review with CodeCompanion'})
--- -- vim.keymap.set('n', '<leader>at', '<Cmd>CodeCompanionTest<CR>', {desc = 'Test with CodeCompanion'})
+
+-- Universal Code Runner
+vim.keymap.set('n', '<leader>rr', function()
+  require('custom.runner').run_code()
+end, { desc = 'Run Code (File)', silent = true })

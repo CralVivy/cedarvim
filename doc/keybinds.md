@@ -66,6 +66,12 @@ This document provides a comprehensive list of the keybindings actively configur
 | `<leader>al` | Normal | Load a saved CodeCompanion Chat |
 | `<leader>ad` | Normal | Delete a saved CodeCompanion Chat |
 
+## 🚀 Execution & Running
+
+| Key | Mode | Action |
+| :--- | :---: | :--- |
+| `<leader>rr` | Normal | Run current file (Universal Code Runner) |
+
 ## 🐞 Debugging (DAP)
 
 | Key | Mode | Action |
