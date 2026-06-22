@@ -54,8 +54,8 @@ map('n', '<leader>e', '<cmd>Neotree toggle<CR>', { desc = 'Toggle Neo-tree', sil
 -- map('n', '<leader>e', '<cmd>Neotree toggle<CR>', { desc = 'Toggle Neo-tree', silent = true })
 --
 -- Require the theme switcher
--- Map <leader>th to open the theme picker
-vim.keymap.set('n', '<leader>th', function()
+-- Map <leader>tt to open the theme picker
+vim.keymap.set('n', '<leader>tt', function()
   require('custom.theme_switcher').pick_theme()
 end, { desc = 'Pick Theme', silent = true })
 

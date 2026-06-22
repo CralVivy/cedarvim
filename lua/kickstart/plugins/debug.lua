@@ -96,18 +96,111 @@ return {
     }
 
     -- DAP UI setup
-    dapui.setup()
+    dapui.setup {
+      icons = { expanded = '▾', collapsed = '▸', current_frame = '▶' },
+      layouts = {
+        {
+          elements = {
+            { id = 'scopes',      size = 0.40 },
+            { id = 'breakpoints', size = 0.15 },
+            { id = 'stacks',     size = 0.25 },
+            { id = 'watches',    size = 0.20 },
+          },
+          size = 40,
+          position = 'left',
+        },
+        {
+          elements = {
+            { id = 'repl',    size = 0.5 },
+            { id = 'console', size = 0.5 },
+          },
+          size = 12,
+          position = 'bottom',
+        },
+      },
+      floating = { border = 'rounded', mappings = { close = { 'q', '<Esc>' } } },
+      render = { max_value_lines = 100 },
+    }
+
+    -- Define highlight groups for DAP signs
+    vim.api.nvim_set_hl(0, 'DapBreakpointRed',   { ctermbg = 0, fg = '#993939' })
+    vim.api.nvim_set_hl(0, 'DapBreakpointGreen', { ctermbg = 0, fg = '#31B53E' })
+    vim.api.nvim_set_hl(0, 'DapStoppedGreen',    { ctermbg = 0, fg = '#98c379' })
+    -- Full-line background highlight for the line the debugger is currently stopped on
+    vim.api.nvim_set_hl(0, 'DapStoppedLine', { bg = '#2a3d2a' }) -- dark green tint
 
     -- Sign definitions for breakpoints in the Neovim gutter
-    vim.fn.sign_define('DapBreakpoint', { text = '●', texthl = 'DapBreakpointRed', numhl = '' })
-    vim.fn.sign_define('DapBreakpointCondition', { text = '●', texthl = 'DapBreakpointRed', numhl = '' })
-    vim.fn.sign_define('DapLogPoint', { text = '◆', texthl = 'DapBreakpointGreen', numhl = '' })
-    vim.fn.sign_define('DapStopped', { text = '▶', texthl = 'DapStoppedGreen', numhl = '' })
+    vim.fn.sign_define('DapBreakpoint',          { text = '●', texthl = 'DapBreakpointRed',   numhl = '' })
+    vim.fn.sign_define('DapBreakpointCondition', { text = '●', texthl = 'DapBreakpointRed',   numhl = '' })
+    vim.fn.sign_define('DapLogPoint',            { text = '◆', texthl = 'DapBreakpointGreen', numhl = '' })
+    -- linehl  = highlights the entire line background when stopped
+    -- culhl   = highlights the line when the cursor is on the stopped line (overrides linehl at cursor)
+    vim.fn.sign_define('DapStopped', { text = '▶', texthl = 'DapStoppedGreen', numhl = '', linehl = 'DapStoppedLine', culhl = 'DapStoppedLine' })
 
     -- Auto open/close DAP UI based on debug events
     dap.listeners.after.event_initialized['dapui_config'] = dapui.open
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
+
+    -- Terminate when a step lands in JDK internals (e.g. Thread.exit() after main() returns).
+    -- stepFilters only prevent stepping INTO filtered classes; they cannot prevent the JVM's own
+    -- thread-lifecycle code from firing a 'stopped' event at Thread.java after main() exits.
+    --
+    -- How this works without breaking anything:
+    --  • 'after' fires AFTER nvim-dap has already processed the event and navigated to the file.
+    --  • We check the current buffer name — JDTLS always uses jdt:// URIs for virtual/decompiled
+    --    files (Thread.class, etc.). User .java files are opened from disk with real paths.
+    --  • We only act when reason == 'step' so intentional JDK breakpoints are never killed.
+    --  • vim.schedule() ensures we run in Neovim's main thread (safe for UI calls).
+    --  • dap.terminate() is the correct public API — no extra DAP protocol requests needed.
+    dap.listeners.after.event_stopped['java_jdk_exit_mark'] = function(session, body)
+      if session.config.type == 'java' then
+        -- If the reason isn't strictly 'step', we might be missing the exit event!
+        if body and (body.reason == 'step' or body.reason == 'exception' or body.reason == 'pause') then
+          session.__java_check_jdk_exit = true
+        end
+      end
+    end
+
+    dap.listeners.after.stackTrace['java_jdk_exit'] = function(session, err, response, request)
+      if session.config.type ~= 'java' then return end
+      if not session.__java_check_jdk_exit then return end
+      if err or not response or not response.stackFrames or #response.stackFrames == 0 then return end
+
+      -- Clear the flag so manual stack trace requests don't trigger termination
+      session.__java_check_jdk_exit = nil
+
+      vim.schedule(function()
+        local top_frame = response.stackFrames[1]
+        if top_frame and top_frame.source then
+          local source = top_frame.source
+          local path = source.path or ''
+          
+          -- JDTLS internal paths look like: jdt://contents/java.base/java.lang/Thread.class...
+          -- All standard JDK modules start with 'java.' or 'jdk.' (e.g., java.base, java.desktop, jdk.compiler)
+          local is_jdk_internal = path:find('jdt://contents/java.', 1, true) or 
+                                  path:find('jdt://contents/jdk.', 1, true) or
+                                  path:find('jdt://contents/sun.', 1, true)
+
+          if is_jdk_internal then
+            vim.notify('[DAP] Stepped into JDK internals — terminating session.', vim.log.levels.INFO)
+            
+            -- Clean up the UI and the virtual buffer
+            require('dapui').close()
+            local bufnr = vim.api.nvim_get_current_buf()
+            local bufname = vim.api.nvim_buf_get_name(bufnr)
+            if bufname:find('jdt://', 1, true) or bufname:find('%3C', 1, true) then
+              -- Switch to alternate buffer (the user's code)
+              pcall(vim.cmd, 'b#')
+              -- Wipeout the virtual buffer to keep the bufferline clean
+              pcall(vim.cmd, 'bwipeout! ' .. bufnr)
+            end
+
+            dap.terminate()
+          end
+        end
+      end)
+    end
 
     -- Go language specific setup
     require('dap-go').setup {
@@ -123,52 +216,37 @@ return {
       adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge' },
     }
 
-    -- Java configurations (these configurations will now use the adapter defined by JDTLS)
-    local get_java_main_class = function()
-      local bufnr = vim.api.nvim_get_current_buf()
-      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-      for _, line in ipairs(lines) do
-        if line:find 'public%s+static%s+void%s+main' then
-          local package_name = ''
-          for _, pkg_line in ipairs(lines) do
-            local found_pkg = pkg_line:match '^%s*package%s+([a-zA-Z0-9_.]+);'
-            if found_pkg then
-              package_name = found_pkg .. '.'
-              break
-            end
-          end
-          -- Corrected function name
-          local file_name = vim.fn.fnamemodify(vim.fn.expand '%', ':t:r')
-          return package_name .. file_name
-        end
-      end
-      return vim.fn.input 'Enter Main Class (e.g., com.example.Main): '
-    end
-
-    local get_java_project_name = function()
-      -- Corrected function name
-      local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
-      return vim.fn.input('Enter Project Name: ', project_name)
-    end
-
+    -- JDTLS will automatically register Java DAP configurations via jdtls.dap.setup_dap_main_class_configs()
+    -- We provide a manual fallback in case JDTLS fails to auto-discover the main class (e.g., loose files or timeouts)
     dap.configurations.java = {
       {
         type = 'java',
-        request = 'attach',
-        name = 'Debug (Attach) - Remote',
-        hostName = '127.0.0.1',
-        port = 5005,
-      },
-      {
-        name = 'Launch Java App',
-        type = 'java', -- This 'type' will now be fulfilled by JDTLS's DAP registration
         request = 'launch',
-        mainClass = get_java_main_class,
-        projectName = get_java_project_name,
-        javaExec = '~/.sdkman/candidates/java/current/bin/java', -- Path to your Java executable
-        classPaths = {},
-        modulePaths = {},
-        externalConsole = true,
+        name = 'Launch Java App (Manual Fallback)',
+        mainClass = function()
+          local file_name = vim.fn.fnamemodify(vim.fn.expand '%', ':t:r')
+          return vim.fn.input('Main Class: ', file_name)
+        end,
+        projectName = function()
+          return vim.fn.input('Project Name: ', vim.fn.fnamemodify(vim.fn.getcwd(), ':t'))
+        end,
+        -- Step filters: skip JDK-internal classes when stepping so the debugger
+        -- doesn't fall into Thread.java / System.java after your main() exits.
+        -- NOTE: The raw java-debug-adapter does NOT support the '$JDK' alias (VSCode-only).
+        -- The correct field name is 'classNameFilters', not 'skipClasses'.
+        stepFilters = {
+          classNameFilters = {
+            'java.*',
+            'javax.*',
+            'jdk.*',
+            'sun.*',
+            'com.sun.*',
+            'org.springframework.*',
+          },
+          skipSynthetics = true,
+          skipStaticInitializers = false,
+          skipConstructors = false,
+        },
       },
     }
 

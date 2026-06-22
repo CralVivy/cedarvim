@@ -56,7 +56,6 @@ return {
       -- The following lines are no longer needed as IblScope is now directly defined:
       vim.cmd.highlight 'clear @ibl.scope.underline.1'
       vim.cmd.highlight 'link @ibl.scope.underline.1 Visual'
-      vim.cmd.highlight 'link IblScope Visual'
     end,
   },
 }

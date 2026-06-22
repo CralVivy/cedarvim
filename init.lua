@@ -112,6 +112,9 @@ vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.o.number = true
+-- Enable auto indent and smart indent
+vim.o.autoindent = true
+vim.o.smartindent = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 vim.o.relativenumber = true
@@ -359,6 +362,13 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>f', group = '[F]ind / [F]iles' },
+        { '<leader>g', group = '[G]it' },
+        { '<leader>a', group = '[A]I / CodeCompanion' },
+        { '<leader>b', group = '[B]uffer' },
       },
     },
   },
@@ -675,21 +685,6 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
-      -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
-
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
-
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
@@ -702,7 +697,7 @@ require('lazy').setup({
     init = function()
       -- Install parsers that aren't already installed
       local ensure_installed = {
-        'bash', 'c', 'java', 'css', 'javascript', 'typescript',
+        'bash', 'c', 'cpp', 'java', 'css', 'javascript', 'typescript',
         'tsx', 'diff', 'html', 'lua', 'luadoc', 'markdown',
         'markdown_inline', 'query', 'vim', 'vimdoc',
       }
@@ -715,10 +710,13 @@ require('lazy').setup({
       end
 
       -- Enable treesitter highlighting and indentation per filetype
+      local ts_group = vim.api.nvim_create_augroup('kickstart-treesitter', { clear = true })
       vim.api.nvim_create_autocmd('FileType', {
+        group = ts_group,
         callback = function()
           pcall(vim.treesitter.start)
           vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          vim.b.did_indent = 1 -- prevent Neovim's runtime indent scripts from overriding treesitter's
         end,
       })
     end,
@@ -750,7 +748,7 @@ require('lazy').setup({
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   -- require 'custom.configs.toggle_buffer',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --

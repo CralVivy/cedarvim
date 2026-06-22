@@ -1,1 +1,1 @@
-return { mode = "dynamic", theme = "🌈 Pywal (Dynamic)" }
+return { mode = "static", theme = "night-owl" }

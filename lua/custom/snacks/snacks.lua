@@ -35,9 +35,6 @@ return {
       words = {
         enabled = true,
       },
-      image = {
-        enabled = false,
-      },
       animate = {
         enabled = true,
         fps = 240,

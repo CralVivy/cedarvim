@@ -23,8 +23,8 @@ return {
       keymap = {
         preset = 'default',
         -- Customizing Tab to match the previous nvim-cmp behavior (jump or select)
-        ['<Tab>'] = { 'select_next', 'snippet_forward' },
-        ['<S-Tab>'] = { 'select_prev', 'snippet_backward' },
+        ['<Tab>'] = { 'select_next', 'snippet_forward', 'fallback' },
+        ['<S-Tab>'] = { 'select_prev', 'snippet_backward', 'fallback' },
       },
 
       appearance = {
@@ -39,13 +39,19 @@ return {
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'buffer', 'copilot' },
+        default = { 'lsp', 'path', 'snippets', 'buffer', 'copilot', 'lazydev' },
         providers = {
           copilot = {
             name = 'copilot',
             module = 'blink-cmp-copilot',
-            score_offset = 100, -- Prioritize Copilot suggestions
+            score_offset = 10, -- Lower offset so it doesn't bury LSP
             async = true,
+          },
+          lazydev = {
+            name = 'LazyDev',
+            module = 'lazydev.integrations.blink',
+            -- make lazydev completions top priority (see `:h blink.cmp`)
+            score_offset = 100,
           },
         },
       },

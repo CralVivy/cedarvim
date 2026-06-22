@@ -5,10 +5,8 @@ return {
     'akinsho/bufferline.nvim',
     version = '*',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
-    opts = function()
-      return require 'custom.configs.bufferline'
-    end,
     config = function()
+      require('bufferline').setup(require('custom.configs.bufferline'))
       require('custom.toggle_buffer').setup()
     end,
   },

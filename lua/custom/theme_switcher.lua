@@ -85,15 +85,17 @@ end
 
 m.load_theme = function(theme)
   local mode = 'static'
+  local theme_to_save = theme
   if theme == '🌈 Pywal (Dynamic)' then
     mode = 'dynamic'
+    theme_to_save = 'pywal'
     vim.cmd 'colorscheme pywal'
   else
     vim.cmd('colorscheme ' .. theme)
   end
 
   vim.notify('Loaded ' .. mode .. ' theme: ' .. theme, vim.log.levels.INFO, { title = 'Theme Switcher' })
-  save_theme(mode, theme)
+  save_theme(mode, theme_to_save)
   restore_ui_defaults()
 end
 

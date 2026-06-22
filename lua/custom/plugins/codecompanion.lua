@@ -23,14 +23,14 @@ return {
     require('codecompanion').setup(opts)
 
     -- SAVE CHAT (with overwrite confirmation)
-    vim.api.nvim_create_user_command('CodeCompanionSave', function(opts)
+    vim.api.nvim_create_user_command('CodeCompanionSave', function(args)
       local codecompanion = require 'codecompanion'
       local ok, chat = pcall(codecompanion.buf_get_chat, 0)
       if not ok or not chat then
         vim.notify('⚠️ Run inside a CodeCompanion chat buffer', vim.log.levels.ERROR)
         return
       end
-      if #opts.fargs == 0 then
+      if #args.fargs == 0 then
         vim.notify('❗ Provide a filename: :CodeCompanionSave <filename>', vim.log.levels.ERROR)
         return
       end
@@ -42,7 +42,7 @@ return {
         folder:mkdir { parents = true }
       end
 
-      local fname = table.concat(opts.fargs, '-') .. '.md'
+      local fname = table.concat(args.fargs, '-') .. '.md'
       local filepath = folder:joinpath(fname)
 
       -- Confirm overwrite if file exists
@@ -70,8 +70,11 @@ return {
       require('snacks').picker.files {
         prompt = '📂 Load CodeCompanion Chat',
         cwd = vim.fn.stdpath 'data' .. '/cc_saves',
-        confirm = function(item)
-          vim.cmd('edit ' .. item.path)
+        confirm = function(picker, item)
+          picker:close()
+          if item and item.file then
+            vim.cmd('edit ' .. item.file)
+          end
         end,
       }
     end, {})
@@ -84,8 +87,10 @@ return {
       require('snacks').picker.files {
         prompt = '🗑️ Delete CodeCompanion Chat',
         cwd = save_dir,
-        confirm = function(item)
-          local full_path = save_dir .. '/' .. item.value
+        confirm = function(picker, item)
+          picker:close()
+          if not item or not item.file then return end
+          local full_path = item.file
           local path = Path:new(full_path)
           if path:exists() then
             path:rm()
