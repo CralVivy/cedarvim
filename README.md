@@ -4,6 +4,8 @@
 
 **A high-performance, modular Neovim configuration built for professional developers.**
 
+_"A personal Neovim configuration forked from kickstart.nvim"_
+
 [![Neovim](https://img.shields.io/badge/Neovim-v0.10+-blueviolet?logo=neovim&logoColor=white)](https://neovim.io)
 [![Lua](https://img.shields.io/badge/Language-Lua-blue?logo=lua)](https://www.lua.org)
 [![Rust Powered](https://img.shields.io/badge/Completion-Rust_Powered-orange?logo=rust)](https://github.com/Saghen/blink.cmp)

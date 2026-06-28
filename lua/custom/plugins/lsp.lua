@@ -136,6 +136,11 @@ return {
           map('gW', function() require('snacks').picker.lsp_workspace_symbols() end, 'Open Workspace Symbols')
           map('grt', function() require('snacks').picker.lsp_type_definitions() end, '[G]oto [T]ype Definition')
 
+          -- Neovim 0.10+: pass border option directly to hover call
+          vim.keymap.set('n', 'K', function()
+            vim.lsp.buf.hover { border = 'rounded' }
+          end, { buffer = event.buf, desc = 'LSP: Hover Documentation' })
+
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           local function client_supports_method(c, method, b)
             if vim.fn.has 'nvim-0.11' == 1 then

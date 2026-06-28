@@ -23,8 +23,8 @@ function M.run_code()
   local cmds = {
     python = string.format("python3 '%s'", file),
     java = string.format("java '%s'", file),
-    c = string.format("clang -O2 '%s' -o '%s' && '%s'", file, file_no_ext, file_no_ext),
-    cpp = string.format("clang++ -O2 '%s' -o '%s' && '%s'", file, file_no_ext, file_no_ext),
+    c = string.format("gcc -O2 '%s' -o '%s' && '%s'", file, file_no_ext, file_no_ext),
+    cpp = string.format("g++ -O2 '%s' -o '%s' && '%s'", file, file_no_ext, file_no_ext),
     go = string.format("go run '%s'", file),
     rust = string.format("rustc '%s' && '%s'", file, file_no_ext),
     javascript = string.format("node '%s'", file),
@@ -37,7 +37,7 @@ function M.run_code()
 
   if cmd then
     -- Send the command to the first toggleterm instance (it will open if hidden)
-    require('toggleterm').exec(cmd)
+    require('toggleterm').exec('clear; ' .. cmd)
     vim.notify('Running ' .. filetype .. '...', vim.log.levels.INFO)
   else
     vim.notify('No runner configured for filetype: ' .. filetype, vim.log.levels.WARN)

@@ -48,12 +48,8 @@ local function save_theme(mode, theme)
 end
 
 local function restore_ui_defaults()
-  local ok, bufferline = pcall(require, 'bufferline')
-  if ok then
-    package.loaded['custom.configs.bufferline'] = nil
-    local opts = require 'custom.configs.bufferline'
-    bufferline.setup(opts)
-  end
+  -- Bufferline re-applies itself via a ColorScheme autocmd registered in buffer-ui.lua.
+  -- No manual re-setup needed here.
 end
 
 function m.load_last_theme()

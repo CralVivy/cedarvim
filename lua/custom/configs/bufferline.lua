@@ -1,4 +1,14 @@
+-- Dynamically build highlights so slanted separators always match the active theme.
+-- Catppuccin ships a first-class bufferline integration; all other themes fall back
+-- to bufferline's own highlight logic (which reads from the active colorscheme).
+local highlights = {}
+local ok, catppuccin_bl = pcall(require, 'catppuccin.groups.integrations.bufferline')
+if ok and vim.g.colors_name and vim.g.colors_name:find('catppuccin') then
+  highlights = catppuccin_bl.get()
+end
+
 return {
+  highlights = highlights,
   options = {
     numbers = 'none',
     close_command = 'bdelete! %d',

@@ -1,1 +1,1 @@
-return { mode = "static", theme = "night-owl" }
+return { mode = "static", theme = "catppuccin" }

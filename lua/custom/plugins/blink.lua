@@ -22,6 +22,8 @@ return {
     opts = {
       keymap = {
         preset = 'default',
+        ['<CR>'] = { 'accept', 'fallback' },
+        ['<Esc>'] = { 'cancel', 'fallback' },
         -- Customizing Tab to match the previous nvim-cmp behavior (jump or select)
         ['<Tab>'] = { 'select_next', 'snippet_forward', 'fallback' },
         ['<S-Tab>'] = { 'select_prev', 'snippet_backward', 'fallback' },
@@ -31,9 +33,14 @@ return {
         nerd_font_variant = 'mono',
       },
 
+      signature = {
+        window = { border = 'rounded' },
+      },
+
       completion = {
+        menu = { border = 'rounded' },
         -- Set to true to show documentation automatically
-        documentation = { auto_show = true, auto_show_delay_ms = 500 },
+        documentation = { auto_show = true, auto_show_delay_ms = 500, window = { border = 'rounded' } },
         -- Ghost text for Copilot
         ghost_text = { enabled = true },
       },

@@ -6,8 +6,21 @@ return {
     version = '*',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
-      require('bufferline').setup(require('custom.configs.bufferline'))
+      local function apply_bufferline()
+        package.loaded['custom.configs.bufferline'] = nil
+        require('bufferline').setup(require('custom.configs.bufferline'))
+      end
+
+      apply_bufferline()
       require('custom.toggle_buffer').setup()
+
+      -- Re-apply bufferline highlights every time the colorscheme changes.
+      -- This is necessary because bufferline's highlight groups depend on the active
+      -- colorscheme and must be regenerated AFTER the ColorScheme event fires.
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        group = vim.api.nvim_create_augroup('bufferline-reapply', { clear = true }),
+        callback = apply_bufferline,
+      })
     end,
   },
 
