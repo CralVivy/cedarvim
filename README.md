@@ -86,7 +86,7 @@ When you first open Neovim, `mason.nvim` will automatically install these:
 
 ## Installation
 
-> **Back up your existing config first!**
+> **Back up your existing config first**
 >
 > ```bash
 > mv ~/.config/nvim ~/.config/nvim.bak
