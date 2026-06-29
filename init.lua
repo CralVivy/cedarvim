@@ -697,9 +697,23 @@ require('lazy').setup({
     init = function()
       -- Install parsers that aren't already installed
       local ensure_installed = {
-        'bash', 'c', 'cpp', 'java', 'css', 'javascript', 'typescript',
-        'tsx', 'diff', 'html', 'lua', 'luadoc', 'markdown',
-        'markdown_inline', 'query', 'vim', 'vimdoc',
+        'bash',
+        'c',
+        'cpp',
+        'java',
+        'css',
+        'javascript',
+        'typescript',
+        'tsx',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
       }
       local installed = require('nvim-treesitter.config').get_installed()
       local to_install = vim.tbl_filter(function(p)
